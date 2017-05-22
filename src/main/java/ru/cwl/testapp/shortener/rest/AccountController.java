@@ -60,7 +60,7 @@ public class AccountController {
             String pass = accountService.createAccount(accountId);
             SuccessResp resp = new SuccessResp();
             resp.success = true;
-            resp.description = "our account is opened";
+            resp.description = "Your account is opened";
             resp.password = pass;
             return resp;
         }
@@ -80,36 +80,12 @@ public class AccountController {
      * password: 'xC345Fc0'}
      * www
      */
-    private class RegisterAccountResponse {
+    static public class RegisterAccountResponse {
+        public RegisterAccountResponse() {
+        }
+
         public boolean success = true;
         public String description = "Your account is opened";
     }
 
-    private class SuccessResp extends RegisterAccountResponse {
-        public String password = "PaSSw";
-
-    }
-
-    /**
-     * Created by vadim.tishenko
-     * on 20.05.2017 16:05.
-     */
-    public static class RegisterAccountRequest {
-        public RegisterAccountRequest(){    }
-
-        /**
-         * JSON object with the following parameters:
-         *  AccountId (String, mandatory)
-         * Example: { AccountId : 'myAccountId'}
-         */
-        String accountId;
-
-        public String getAccountId() {
-            return accountId;
-        }
-
-        public void setAccountId(String a2ccountId) {
-            accountId = a2ccountId;
-        }
-    }
 }

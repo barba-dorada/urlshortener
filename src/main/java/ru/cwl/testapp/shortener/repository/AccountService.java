@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 public class AccountService {
-    Map<String,String> accounts=new ConcurrentHashMap<>();
+    private Map<String,String> accounts=new ConcurrentHashMap<>();
 
     public String createAccount(String accountId) {
         String newPass=generatePass();
