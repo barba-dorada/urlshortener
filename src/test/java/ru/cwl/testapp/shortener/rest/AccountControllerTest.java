@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -14,6 +15,8 @@ import org.springframework.web.context.WebApplicationContext;
 import ru.cwl.testapp.shortener.ShortenerTestAppApplication;
 import ru.cwl.testapp.shortener.repository.AccountService;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +47,20 @@ public class AccountControllerTest {
 // stubbing and verified behavior would "leak" from one test to another.
         //Mockito.reset(userService);
 
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        //mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+        AccountService as = mock(AccountService.class);
+        when(as.createAccount("newUserId")).thenReturn("newPass");
+
+        /*
+        1.замокать сервис
+        2.собрать рестконтроллер
+        3.подставить через
+
+        mockMvc = MockMvcBuilders.standaloneSetup(webApplicationContext).build();
+        */
+        AccountController accountController = new AccountController(as);
+        mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
     }
 
     @Test
@@ -63,9 +79,9 @@ public class AccountControllerTest {
         mockMvc.perform(post("/account").content("{ \"accountId\" : \"newUserId\"}").contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk()).andExpect(content()
                 .json("{" +
-                        " \"description\": \"Your account is opened\"," +
-                        "\"success\": true," +
-                        "\"password\": \"P@SsWorD\"" +
+                        " description: \"Your account is opened\"," +
+                        "success: true," +
+                        "password: \"newPass\"" +
                         "}"
                 ));
 
