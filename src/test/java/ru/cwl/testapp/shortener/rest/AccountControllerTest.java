@@ -15,8 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 import ru.cwl.testapp.shortener.ShortenerTestAppApplication;
 import ru.cwl.testapp.shortener.repository.AccountService;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,11 +33,10 @@ public class AccountControllerTest {
 
     private MockMvc mockMvc;
 
-    @Autowired
     private AccountService accountServiceMock;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
+//    @Autowired
+//    private WebApplicationContext webApplicationContext;
 
     @Before
     public void setUp() {
@@ -49,8 +47,9 @@ public class AccountControllerTest {
 
         //mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        AccountService as = mock(AccountService.class);
-        when(as.createAccount("newUserId")).thenReturn("newPass");
+        accountServiceMock = mock(AccountService.class);
+        when(accountServiceMock.createAccount("newUserId")).thenReturn("newPass");
+        when(accountServiceMock.isAccountExist("newUserId")).thenReturn(false);
 
         /*
         1.замокать сервис
@@ -59,7 +58,7 @@ public class AccountControllerTest {
 
         mockMvc = MockMvcBuilders.standaloneSetup(webApplicationContext).build();
         */
-        AccountController accountController = new AccountController(as);
+        AccountController accountController = new AccountController(accountServiceMock);
         mockMvc = MockMvcBuilders.standaloneSetup(accountController).build();
     }
 
@@ -84,6 +83,10 @@ public class AccountControllerTest {
                         "password: \"newPass\"" +
                         "}"
                 ));
+
+        verify(accountServiceMock,times(1)).isAccountExist("newUserId");
+        verify(accountServiceMock, times(1)).createAccount("newUserId");
+        verifyNoMoreInteractions(accountServiceMock);
 
    /*     mockMvc.perform(post("/account").content("{ \"accountId\" : \"newUserId\"}").contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk()).andExpect(content()
@@ -112,5 +115,8 @@ public class AccountControllerTest {
 
 
     }
+
+
+
 
 }
