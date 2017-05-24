@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.cwl.testapp.shortener.repository.AccountService;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +36,7 @@ public class AccountControllerTest {
         RegisterAccountRequest req = new RegisterAccountRequest();
         req.setAccountId("newUserId");
         AccountController.RegisterAccountResponse result2 = accountController.registerAccount(req);
-        //assertThat(result2,isA(SuccessResp.class));
+        assertThat(result2,instanceOf(SuccessResp.class));
         SuccessResp result = (SuccessResp) result2;
         assertTrue(result.success);
         assertThat(result.description, is("Your account is opened"));
