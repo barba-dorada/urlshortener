@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver;
 import ru.cwl.testapp.shortener.repository.AccountService;
 import ru.cwl.testapp.shortener.repository.RegisterService;
 
@@ -78,4 +77,19 @@ public class RegisterController {
         return UNAUTHORIZED;
     }
 
+    public LongUrlResponse getLongUrl(String shortUrl) {
+        RegisterService.Pair<String, Integer> res = registerService.getLongUrl(shortUrl);
+        if(res==null){
+            throw new URLNotFoundException();
+        }
+        LongUrlResponse r = new LongUrlResponse();
+        r.longUrl=res.getFirst();
+        r.redirectType=res.getSecond();
+        return r;
+    }
+
+    public class LongUrlResponse {
+        String longUrl;
+        int redirectType;
+    }
 }

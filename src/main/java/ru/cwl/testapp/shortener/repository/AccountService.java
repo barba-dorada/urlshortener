@@ -13,10 +13,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AccountService {
     private Map<String,String> accounts=new ConcurrentHashMap<>();
 
-    public String createAccount(String accountId) {
-        String newPass=generatePass();
-        accounts.put(accountId,newPass);
-        return newPass;
+    synchronized public String createAccount(String accountId) {
+        synchronized(accounts) {
+            if(!isAccountExist(accountId)) {
+                String newPass=generatePass();
+                accounts.put(accountId, newPass);
+                return newPass;
+            }
+        }
+        throw new DuplicateAccount();
     }
 
     private String generatePass() {
@@ -29,5 +34,8 @@ public class AccountService {
 
     public boolean checkPassword(String accId,String pass){
         return pass.equals(accounts.get(accId));
+    }
+
+    public class DuplicateAccount extends RuntimeException {
     }
 }

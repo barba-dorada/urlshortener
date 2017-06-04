@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ShortenerTestAppApplication.class})
 @WebAppConfiguration
-public class RegisterControllerTest {
+public class RegisterControllerGetUrlTest {
 
     //private MockMvc mockMvc;
 
@@ -43,41 +43,40 @@ public class RegisterControllerTest {
     @Before
     public void before(){
         RegisterService registerServiceMock = mock(RegisterService.class);
+        when(registerServiceMock.getLongUrl("1")).thenReturn(new RegisterService.Pair<>("http://yandex.ru",301));
+        when(registerServiceMock.getLongUrl("2")).thenReturn(new RegisterService.Pair<>("http://google.ru",302));
+        when(registerServiceMock.getLongUrl("3")).thenReturn(null);
         registerController=new RegisterController(registerServiceMock,accountService);
+
     }
 
     @Test
-    public void addUrlBadAuthToken() {
-        RequestRegister req = new RequestRegister();
-        req.url = "";
-        req.redirectType = "301";
-        String auth = "";
-        ResponseEntity<?> resp = registerController.registerUrl(req, auth);
-
-        assertTrue(resp.getBody() instanceof String);
-        assertThat((String) (resp.getBody()), is(" <== error"));
-
-        assertThat(resp.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
-        assertThat(resp.getStatusCodeValue(), is(401));
+    public void getUrl301(){
+        String shortUrl = "1";
+        RegisterController.LongUrlResponse result = registerController.getLongUrl(shortUrl);
+        assertThat(result.longUrl,is("http://yandex.ru"));
+        assertThat(result.redirectType,is(301));
     }
 
     @Test
-    public void addUrlWithAuth() {
-        AccountService accountServiceMock=mock(AccountService.class);
-        when(accountServiceMock.checkPassword("newUserId", "P@SsWorD")).thenReturn(true);
-        registerController = new RegisterController(registerService, accountServiceMock);
-
-        RequestRegister req = new RequestRegister();
-        req.url = "http://yandex.ru";
-        req.redirectType = "301";
-        String auth = "Basic bmV3VXNlcklkOlBAU3NXb3JE";
-        ResponseEntity<?> resp = registerController.registerUrl(req, auth);
-        assertTrue(resp.getBody() instanceof RegisterResult);
-        RegisterResult res= (RegisterResult) resp.getBody();
-
-        assertThat(res.getShortUrl(), is("1"));
-
-        assertThat(resp.getStatusCode(), is(HttpStatus.OK));
+    public void getUrl302(){
+        String shortUrl = "2";
+        RegisterController.LongUrlResponse result = registerController.getLongUrl(shortUrl);
+        assertThat(result.longUrl,is("http://google.ru"));
+        assertThat(result.redirectType,is(302));
     }
+
+    @Test
+    public void getUrlNotFound(){
+        String shortUrl = "3";
+        boolean res = false;
+        try {
+            RegisterController.LongUrlResponse result = registerController.getLongUrl(shortUrl);
+        }catch (URLNotFoundException e){
+            res=true;
+        }
+        assertTrue(res);
+    }
+
 
 }

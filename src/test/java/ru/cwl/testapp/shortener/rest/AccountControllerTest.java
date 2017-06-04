@@ -6,6 +6,7 @@ import ru.cwl.testapp.shortener.repository.AccountService;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -18,21 +19,22 @@ import static org.mockito.Mockito.*;
 public class AccountControllerTest {
 
     private AccountService accountServiceMock;
-    AccountController accountController;
+    private AccountController accountController;
 
 
     @Before
     public void setUp() {
+    }
+
+    @Test
+    public void registerAccount() throws Exception {
 
         accountServiceMock = mock(AccountService.class);
         when(accountServiceMock.createAccount("newUserId")).thenReturn("newPass");
         when(accountServiceMock.isAccountExist("newUserId")).thenReturn(false);
 
         accountController = new AccountController(accountServiceMock);
-    }
 
-    @Test
-    public void registerAccount() throws Exception {
         RegisterAccountRequest req = new RegisterAccountRequest();
         req.setAccountId("newUserId");
         AccountController.RegisterAccountResponse result2 = accountController.registerAccount(req);
@@ -42,7 +44,29 @@ public class AccountControllerTest {
         assertThat(result.description, is("Your account is opened"));
         assertThat(result.password, is("newPass"));
 
-        verify(accountServiceMock, times(1)).isAccountExist("newUserId");
+        verify(accountServiceMock, times(1)).createAccount("newUserId");
+        verifyNoMoreInteractions(accountServiceMock);
+    }
+
+    @Test
+    public void registerDuplicateAccount() throws Exception {
+
+        accountServiceMock = mock(AccountService.class);
+        when(accountServiceMock.createAccount("newUserId")).thenThrow(AccountService.DuplicateAccount.class);
+
+        accountController = new AccountController(accountServiceMock);
+
+        RegisterAccountRequest req = new RegisterAccountRequest();
+        req.setAccountId("newUserId");
+
+        AccountController.RegisterAccountResponse result2 = accountController.registerAccount(req);
+
+        assertThat(result2.success, is(false));
+
+        assertThat(result2,instanceOf(AccountController.RegisterAccountResponse.class));
+        assertFalse(result2.success);
+        assertThat(result2.description, is("account with that ID already exists"));
+
         verify(accountServiceMock, times(1)).createAccount("newUserId");
         verifyNoMoreInteractions(accountServiceMock);
     }

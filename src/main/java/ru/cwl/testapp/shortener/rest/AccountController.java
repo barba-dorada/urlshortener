@@ -51,20 +51,23 @@ public class AccountController {
     @RequestMapping(value = "/account", method = POST)
     public RegisterAccountResponse registerAccount(@RequestBody RegisterAccountRequest request) {
         String accountId = request.getAccountId();
-        if (accountService.isAccountExist(accountId)) {
-            RegisterAccountResponse response = new RegisterAccountResponse();
-            response.success = false;
-            response.description = "account with that ID already exists";
-            return response;
-        } else {
+        try {
             String pass = accountService.createAccount(accountId);
             SuccessResp resp = new SuccessResp();
             resp.success = true;
             resp.description = "Your account is opened";
             resp.password = pass;
             return resp;
+
+        } catch (AccountService.DuplicateAccount e) {
+            RegisterAccountResponse response = new RegisterAccountResponse();
+            response.success = false;
+            response.description = "account with that ID already exists";
+            return response;
         }
+
     }
+
 
     /**
      * We distinguish the successful from the unsuccessful registration.
